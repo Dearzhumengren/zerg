@@ -7,4 +7,5 @@
  */
 return [
     'img_prefix'=>'http://tp5zerg.com/images',
+    'token_expire_in'=>7200
 ];
