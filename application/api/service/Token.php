@@ -9,6 +9,7 @@
 namespace app\api\service;
 
 
+use app\lib\exception\ForbiddenException;
 use app\lib\exception\TokenException;
 use think\Cache;
 use think\Exception;
@@ -56,4 +57,65 @@ class Token
         $uid = self::getCurrentTokenVar('uid');
         return $uid;
     }
+
+    /**
+     * 需要用户和CMS管理员都可以访问的权限
+     * @return bool
+     * @throws Exception
+     * @throws ForbiddenException
+     * @throws TokenException
+     */
+    public static function needPrimaryScope()
+    {
+        $scope = self::getCurrentTokenVar('scope');
+        if ($scope){
+            if($scope >= \ScopeEnum::User){
+                return true;
+            }
+            else{
+                throw new ForbiddenException();
+            }
+        }
+        else{
+            throw new TokenException();
+        }
+    }
+
+    /**
+     * 只有用户才能访问的接口权限
+     * @return bool
+     * @throws Exception
+     * @throws ForbiddenException
+     * @throws TokenException
+     */
+    public  static function needExclusiveScope()
+    {
+        $scope = self::getCurrentTokenVar('scope');
+        if ($scope){
+            if($scope == \ScopeEnum::User){
+                return true;
+            }
+            else{
+                throw new ForbiddenException();
+            }
+        }
+        else{
+            throw new TokenException();
+        }
+
+
+    }
+
+    public static function isValidOperate($checkedUID)
+    {
+        if (!$checkedUID){
+            throw new Exception('检查UID时必须传入一个被检查的UID');
+        }
+        $currentOperateUID = self::getCurrentUid();
+        if ($currentOperateUID == $checkedUID){
+            return true;
+        }
+        return false;
+    }
+
 }
